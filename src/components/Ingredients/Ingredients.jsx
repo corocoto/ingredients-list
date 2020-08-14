@@ -19,7 +19,8 @@ const Ingredients = () => {
         setUserIngredients(prevState => [...prevState, {id, ...ingredient}]);
     };
 
-    const removeIngredientHandler = id => {
+    const removeIngredientHandler = async id => {
+        await fetch(`https://ingredients-list-941ab.firebaseio.com/ingredients/${id}.json`, { method: 'DELETE' });
         setUserIngredients(prevState => prevState.filter(ingredient => ingredient.id !== id));
     };
 
