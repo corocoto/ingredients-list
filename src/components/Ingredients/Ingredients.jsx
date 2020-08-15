@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useReducer} from 'react';
+import React, {useCallback, useReducer} from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
@@ -14,17 +14,31 @@ const ingredientsReducer = (ingredientsState, action) => {
         case 'DELETE':
             return ingredientsState.filter(ingredient => ingredient.id !== action.id);
         default:
-            return new Error('Should not get here!');
+            throw new Error('Should not get here!');
     }
 };
 
+const httpRequests = (curHttpState, action) => {
+    switch (action.type) {
+        case 'SEND':
+            return {error: null, loading: true};
+        case 'RESPONSE':
+            return {...curHttpState, loading: false};
+        case 'ERROR':
+            return  {loading: false, error: action.errorMessage};
+        case 'CLEAR':
+            return {...curHttpState, error: null};
+        default:
+            throw new Error('Should not be reached!');
+    }
+}
+
 const Ingredients = () => {
     const [userIngredients, dispatch] = useReducer(ingredientsReducer, []);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [httpState, httpDispatch] = useReducer(httpRequests, {loading: false, error: null})
 
     const addIngredientHandler = async ingredient => {
-        setIsLoading(true);
+        httpDispatch({type: 'SEND'});
         try {
             const response = await fetch('https://ingredients-list-941ab.firebaseio.com/ingredients.json', {
                 method: 'POST',
@@ -35,41 +49,38 @@ const Ingredients = () => {
             });
             const id = response.json().name + Math.floor(Math.random() * 1000).toString();
             dispatch({type: 'ADD', ingredient: {id, ...ingredient}});
+            httpDispatch({type: 'RESPONSE'});
         } catch (error) {
-            setError(error.message);
-        } finally {
-            setIsLoading(false);
+            httpDispatch({type: 'ERROR', errorMessage: error.message});
         }
-
     };
 
     const removeIngredientHandler = async id => {
-        setIsLoading(true);
+        httpDispatch({type: 'SEND'});
         try {
             await fetch(`https://ingredients-list-941ab.firebaseio.com/ingredients/${id}.json`, {method: 'DELETE'});
             dispatch({type: 'DELETE', id});
+            httpDispatch({type: 'RESPONSE'});
         } catch (error) {
-            setError(error.message);
-        } finally {
-            setIsLoading(false);
+            httpDispatch({type: 'ERROR', errorMessage: error.message});
         }
     };
 
     const filteredIngredientsHandler = useCallback(filteredIngredients =>
         dispatch({type: 'SET', ingredients: filteredIngredients}), []);
 
-    const clearError = () => setError('');
+    const clearError = () => httpDispatch({type: 'CLEAR'});
 
     return (
         <div className="App">
-            {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+            {httpState.error && <ErrorModal onClose={clearError}>{httpState.error}</ErrorModal>}
             <IngredientForm onAddIngredient={addIngredientHandler}/>
             <section>
                 <Search onLoadIngredients={filteredIngredientsHandler}/>
                 <IngredientList
                     ingredients={userIngredients}
                     onRemoveItem={removeIngredientHandler}
-                    loading={isLoading}
+                    loading={httpState.loading}
                 />
             </section>
         </div>
