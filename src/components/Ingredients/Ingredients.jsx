@@ -89,6 +89,6 @@ const Ingredients = () => {
             </section>
         </div>
     );
-}
+};
 
 export default Ingredients;

@@ -2,21 +2,19 @@ import React from 'react';
 
 import './ErrorModal.css';
 
-const ErrorModal = React.memo(props => {
-    return (
-        <React.Fragment>
-            <div className="backdrop" onClick={props.onClose}/>
-            <div className="error-modal">
-                <h2>An Error Occurred!</h2>
-                <p>{props.children}</p>
-                <div className="error-modal__actions">
-                    <button type="button" onClick={props.onClose}>
-                        Okay
-                    </button>
-                </div>
+const ErrorModal = React.memo(props => (
+    <>
+        <div className="backdrop" onClick={props.onClose}/>
+        <div className="error-modal">
+            <h2>An Error Occurred!</h2>
+            <p>{props.children}</p>
+            <div className="error-modal__actions">
+                <button type="button" onClick={props.onClose}>
+                    Okay
+                </button>
             </div>
-        </React.Fragment>
-    );
-});
+        </div>
+    </>
+));
 
 export default ErrorModal;

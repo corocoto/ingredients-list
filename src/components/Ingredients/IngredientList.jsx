@@ -21,6 +21,6 @@ const IngredientList = props => {
             }
         </section>
     );
-}
+};
 
 export default IngredientList;
