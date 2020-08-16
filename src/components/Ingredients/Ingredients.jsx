@@ -23,9 +23,7 @@ const Ingredients = () => {
     const {loading, error, data, sendRequest, reqExtra, reqId} = useHttp();
 
     useEffect(() => {
-        if (loading || error){
-            return;
-        } else if (reqId === 'ADD_INGREDIENT' && data) {
+        if (reqId === 'ADD_INGREDIENT' && data && !(loading && error)) {
             dispatch({
                 type: 'ADD',
                 ingredient: {
