@@ -1,4 +1,4 @@
-import React, {useCallback, useReducer} from 'react';
+import React, {useCallback, useReducer, useMemo} from 'react';
 
 import IngredientForm from './IngredientForm';
 import IngredientList from './IngredientList';
@@ -37,7 +37,7 @@ const Ingredients = () => {
     const [userIngredients, dispatch] = useReducer(ingredientsReducer, []);
     const [httpState, httpDispatch] = useReducer(httpRequests, {loading: false, error: null})
 
-    const addIngredientHandler = async ingredient => {
+    const addIngredientHandler = useCallback(async ingredient => {
         httpDispatch({type: 'SEND'});
         try {
             const response = await fetch('https://ingredients-list-941ab.firebaseio.com/ingredients.json', {
@@ -53,9 +53,9 @@ const Ingredients = () => {
         } catch (error) {
             httpDispatch({type: 'ERROR', errorMessage: error.message});
         }
-    };
+    }, []);
 
-    const removeIngredientHandler = async id => {
+    const removeIngredientHandler = useCallback(async id => {
         httpDispatch({type: 'SEND'});
         try {
             await fetch(`https://ingredients-list-941ab.firebaseio.com/ingredients/${id}.json`, {method: 'DELETE'});
@@ -64,12 +64,20 @@ const Ingredients = () => {
         } catch (error) {
             httpDispatch({type: 'ERROR', errorMessage: error.message});
         }
-    };
+    }, []);
 
     const filteredIngredientsHandler = useCallback(filteredIngredients =>
         dispatch({type: 'SET', ingredients: filteredIngredients}), []);
 
-    const clearError = () => httpDispatch({type: 'CLEAR'});
+    const clearError = useCallback(() => httpDispatch({type: 'CLEAR'}), []);
+
+    const ingredientList = useMemo(() => (
+        <IngredientList
+            ingredients={userIngredients}
+            onRemoveItem={removeIngredientHandler}
+            loading={httpState.loading}
+        />
+    ), [userIngredients, removeIngredientHandler, httpState.loading]);
 
     return (
         <div className="App">
@@ -77,11 +85,7 @@ const Ingredients = () => {
             <IngredientForm onAddIngredient={addIngredientHandler}/>
             <section>
                 <Search onLoadIngredients={filteredIngredientsHandler}/>
-                <IngredientList
-                    ingredients={userIngredients}
-                    onRemoveItem={removeIngredientHandler}
-                    loading={httpState.loading}
-                />
+                {ingredientList}
             </section>
         </div>
     );
