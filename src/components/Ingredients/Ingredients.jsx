@@ -20,7 +20,7 @@ const ingredientsReducer = (ingredientsState, action) => {
 
 const Ingredients = () => {
     const [userIngredients, dispatch] = useReducer(ingredientsReducer, []);
-    const {loading, error, data, sendRequest, reqExtra, reqId} = useHttp();
+    const {loading, error, data, sendRequest, reqExtra, reqId, clear} = useHttp();
 
     useEffect(() => {
         if (reqId === 'ADD_INGREDIENT' && data && !(loading && error)) {
@@ -63,7 +63,6 @@ const Ingredients = () => {
             ingredients: filteredIngredients
         }), []);
 
-    const clearError = useCallback(() => sendRequest({type: 'CLEAR'}), [sendRequest]);
 
     const ingredientList = useMemo(() =>
         <IngredientList
@@ -74,7 +73,7 @@ const Ingredients = () => {
 
     return (
         <div className="App">
-            {error && <ErrorModal onClose={clearError}>{error}</ErrorModal>}
+            {error && <ErrorModal onClose={clear}>{error}</ErrorModal>}
             <IngredientForm onAddIngredient={addIngredientHandler}/>
             <section>
                 <Search onLoadIngredients={filteredIngredientsHandler}/>
